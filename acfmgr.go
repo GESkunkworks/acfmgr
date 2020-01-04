@@ -120,14 +120,17 @@ const credFileTemplate = `# DO NOT EDIT
 ####################################################
 # ASSUMED ROLE: {{.AssumeRoleARN}}
 # ASSUMED FROM INSTANCE ROLE: {{.InstanceRoleARN}}
-# GENERATED: {{.Generated}}{{if .HasDescription}}
+# GENERATED: {{.Generated}}
+{{ .ExpiresToken }}   {{.Expiration}}
+{{- if .HasDescription}}
 # DESCRIPTION: {{.Description}}{{end}}
-{{ .ExpiresToken }}{{.Expiration}}{{if .HasOutput}}
+{{- if .HasRegion}}
+region = {{.Region}}{{end}}
+{{- if .HasOutput}}
 output = {{.Output}}{{end}}
 aws_access_key_id = {{.AccessKeyID}}
 aws_secret_access_key = {{.SecretAccessKey}}
-aws_session_token = {{.SessionToken}}{{if .HasRegion}}
-region = {{.Region}}{{end}}
+aws_session_token = {{.SessionToken}}
 `
 
 func init() {
