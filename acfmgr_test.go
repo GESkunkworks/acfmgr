@@ -5,6 +5,8 @@ import (
     "io/ioutil"
     "os"
     "testing"
+	"os/user"
+	"runtime"
 )
 
 const baseCredFile string = `
@@ -137,3 +139,104 @@ func TestDeleteEntryInMiddle(t *testing.T) {
     }
     defer os.Remove(filename)
 }
+
+func gimmeUserWindows() (fakeUser *user.User) {
+        u := user.User{
+                Uid:      "S-1-5-21-693214013-1772980081-1954060963-500",
+                Gid:      "S-1-5-21-693214013-1772980081-1954060963-513",
+                Username: "EC2AMAZ-K9GK6S2\\Administrator",
+                Name:     "",
+                HomeDir:  "C:\\Users\\Administrator",
+        }
+        fakeUser = &u
+        return fakeUser
+}
+
+func gimmeUserLinux() (fakeUser *user.User) {
+        u := user.User{
+                Uid:      "1001",
+                Gid:      "1001",
+                Username: "admin",
+                Name:     "",
+                HomeDir:  "/home/admin",
+        }
+        fakeUser = &u
+        return fakeUser
+}
+
+func gimmeUserMac() (fakeUser *user.User) {
+        u := user.User{
+                Uid:      "501",
+                Gid:      "20",
+                Username: "dudedudem",
+                Name:     "Dude Dudem",
+                HomeDir:  "/Users/dudedudem",
+        }
+        fakeUser = &u
+        return fakeUser
+}
+
+func TestExpandPath(t *testing.T) {
+        cases := []struct {
+                Path                  string
+                Want                  string
+                User                  *user.User
+                ExpectedErr           error
+                ExpectedRuntime       string
+                PrefixWantCurrentUser bool
+        }{
+                {
+                        User:            gimmeUserMac(),
+                        Path:            "~/.aws/credentials",
+                        Want:            "/Users/dudedudem/.aws/credentials",
+                        ExpectedRuntime: "darwin",
+                },
+                {
+                        User:            gimmeUserMac(),
+                        Path:            "/Users/dudedudem/.aws/credentials",
+                        Want:            "/Users/dudedudem/.aws/credentials",
+                        ExpectedRuntime: "darwin",
+                },
+                // test will always fail because os.ExpandEnv always takes runtime user, ugh
+                // {
+                //      User: gimmeUserMac(),
+                //  Path: "$HOME/.aws/credentials",
+                //      ExpectedRuntime: "darwin",
+                // },
+                {
+                        User:            gimmeUserWindows(),
+                        Path:            "~\\.aws\\credentials",
+                        Want:            "C:\\Users\\Administrator\\.aws\\credentials",
+                        ExpectedRuntime: "windows",
+                },
+                // test will probably fail unless test system user is exactly "Administrator"
+                // {
+                //      User:            gimmeUserWindows(),
+                //      Path:            "%userprofile%\\.aws\\credentials",
+                //      Want:            "C:\\Users\\Administrator\\.aws\\credentials",
+                //      ExpectedRuntime: "windows",
+                // },
+                {
+                        User:            gimmeUserLinux(),
+                        Path:            "~/.aws/credentials",
+                        Want:            "/home/admin/.aws/credentials",
+                        ExpectedRuntime: "linux",
+                },
+        }
+        for _, c := range cases {
+                if runtime.GOOS == c.ExpectedRuntime { // otherwise tests will bomb
+                        have, err := expandPath(c.Path, c.User)
+                        if err != nil {
+                                if c.ExpectedErr == nil {
+                                        t.Errorf("Unexpected error: %s\n", err.Error())
+                                }
+                        } else if have != c.Want {
+                                        t.Errorf("Unexpected result. Have: '%s', Want: '%s'\n", have, c.Want)
+                        } else {
+                                t.Logf("PASS: Have '%s', Want '%s'\n", have, c.Want)
+                        }
+
+                }
+        }
+}
+
