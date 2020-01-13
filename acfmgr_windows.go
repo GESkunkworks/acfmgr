@@ -1,6 +1,6 @@
 // +build windows
 
-package gossamer
+package acfmgr
 
 import (
         "golang.org/x/sys/windows/registry"
