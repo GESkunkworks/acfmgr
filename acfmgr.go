@@ -9,8 +9,9 @@
 //  ####################################################
 //  # ASSUMED ROLE: arn:aws:iam::098765432123:role/aj/d-readonly
 //  # ASSUMED FROM INSTANCE ROLE: NA
-//  # GENERATED: 2019-12-27 14:10:37.282148008 -0500 EST
-//  # EXPIRES@2019-12-27 20:10:14 +0000 UTC
+//  # GENERATED: 2020-01-09 22:30:07.527022 +0000 UTC
+//  # EXPIRES@   2020-01-09 23:30:04 +0000 UTC
+//  # DESCRIPTION: gossamer-legacy
 //  output = json
 //  region = us-east-1
 //  aws_access_key_id = ASIASDIVWOEIOBINAIE
@@ -24,8 +25,9 @@
 //  ####################################################
 //  # ASSUMED ROLE: arn:aws:iam::123456789012:role/aj/d-admin
 //  # ASSUMED FROM INSTANCE ROLE: NA
-//  # GENERATED: 2019-12-27 14:10:37.332225334 -0500 EST
-//  # EXPIRES@2019-12-27 20:10:14 +0000 UTC
+//  # GENERATED: 2020-01-09 22:30:08.518222 +0000 UTC
+//  # EXPIRES@   2020-01-09 23:30:05 +0000 UTC
+//  # DESCRIPTION: gossamer-legacy
 //  output = json
 //  region = us-east-2
 //  aws_access_key_id = ASIZIPVKAVLEIGH
@@ -78,22 +80,6 @@
 //  check(err)
 //  err = c.DeleteEntries()
 //
-// Yields:
-//     [devaccount]
-//     # DO NOT EDIT
-//     # ACFMGR MANAGED SECTION
-//     # (Will be overwritten regularly)
-//     ####################################################
-//     # ASSUMED ROLE: arn:aws:iam::123456789012:role/aj/d-admin
-//     # ASSUMED FROM INSTANCE ROLE: NA
-//     # GENERATED: 2019-12-27 14:10:37.332225334 -0500 EST
-//     # EXPIRES@2019-12-27 20:10:14 +0000 UTC
-//     output = text
-//     region = us-east-2
-//     aws_access_key_id = ASIZIPVKAVLEIGHAODIEA
-//     aws_secret_access_key = GFIzAhjrBu9h3kkUNimntlN0zTF0TLmMebkMM0AP
-//     aws_session_token = FwoGZXIvYXdzED0aDNnD7rODZ+iSKGSi6yK6ASyAn9hJz0ER81eYa842hUwQnca7QNeFq7ZOrYvKb3ZegoVSRFEOaMvgw5La/taN8udMAdFINmxxV7Fx7JGTWuMK9JbWQA8I/AHqCN/NmOC1PrbIRvUhAZ8FgTdjNbiyh8CoOEvFqI3n4uQ57oWG5EZGZh8DSfENoVANR1AIaod7sFU1yHnHKOlr5Zp/iIUcD5j8X8yY8m05Vj2JFNipwcUsIVTNCeaWMud5n/30F4g/sQJLrIcV3nNoTCiWrpnwBTItwq++PEN9OzQYkCIEFNcvJe2ZnkiPz/+4xDNSSfiBGsHMKCGdChINizxQQHzE
-//   ...
 //
 package acfmgr
 
@@ -105,6 +91,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/sts"
 	"io/ioutil"
 	"os"
+	"os/user"
 	"regexp"
 	"strings"
 	"text/template"
@@ -140,16 +127,26 @@ func init() {
 
 // NewCredFileSession creates a new interactive credentials file
 // session. Needs target filename and returns CredFile obj and err.
-func NewCredFileSession(filename string) (*CredFile, error) {
-	cf := CredFile{filename: filename,
+func NewCredFileSession(filename string) (cf *CredFile, err error) {
+	usr, err := user.Current()
+	if err != nil {
+		return cf, err
+	}
+	// try to get absolute path of file
+	filenameExpanded, err := expandPath(filename, usr)
+	if err != nil {
+		return cf, err
+	}
+	credfile := CredFile{filename: filenameExpanded,
 		currBuff: new(bytes.Buffer),
 		reSep:    regexp.MustCompile(`\[.*\]`),
 	}
-	err := cf.loadFile()
+	err = credfile.loadFile()
 	if err != nil {
-		return &cf, err
+		return cf, err
 	}
-	return &cf, err
+	cf = &credfile
+	return cf, err
 }
 
 // CredFile should be built with the exported
@@ -430,3 +427,12 @@ func (c *CredFile) NewEntry(pfi *ProfileEntryInput) (err error) {
 	c.addEntry(credName, credContents)
 	return err
 }
+
+// expandPath takes a file path as a string and attempts to
+// expand things like tildes, %userprofile%, $HOME etc. to form a full
+// absolute path.
+func expandPath(path string, usr *user.User) (expandedPath string, err error) {
+        // relay to the OS specific function built at build time as determined by +build flags
+        return expandPathO(path, usr)
+}
+
