@@ -105,6 +105,8 @@ import (
 	"github.com/aws/aws-sdk-go/service/sts"
 	"io/ioutil"
 	"os"
+	"os/user"
+	"path/filepath"
 	"regexp"
 	"strings"
 	"text/template"
@@ -141,6 +143,11 @@ func init() {
 // NewCredFileSession creates a new interactive credentials file
 // session. Needs target filename and returns CredFile obj and err.
 func NewCredFileSession(filename string) (*CredFile, error) {
+	// Replace tilde with user home directory
+	if strings.HasPrefix(filename, "~/") {
+		usr, _ := user.Current()
+		filename = filepath.Join(usr.HomeDir, filename[2:])
+	}
 	cf := CredFile{filename: filename,
 		currBuff: new(bytes.Buffer),
 		reSep:    regexp.MustCompile(`\[.*\]`),
