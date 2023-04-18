@@ -70,7 +70,7 @@
 //  c, err := acfmgr.NewCredFileSession("~/.aws/credentials")
 //  check(err)
 //  profileInput := acfmgr.ProfileEntryInput{
-//      Credential: <some sts.Credentials object>,
+//      Credential: <some aws.Credentials object>,
 //      ProfileEntryName: "devaccount",
 //      OutputFormat: "text",
 //      Region: "us-east-2",
@@ -88,7 +88,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"github.com/aws/aws-sdk-go/service/sts"
+	"github.com/aws/aws-sdk-go-v2/aws"
 	"io/ioutil"
 	"os"
 	"os/user"
@@ -325,7 +325,7 @@ func (c *CredFile) createFile() (bool, error) {
 // for acfmgr CredFile to write a profile entry
 // to the file.
 type ProfileEntryInput struct {
-	Credential       *sts.Credentials   // MANDATORY: credentials object from aws.STS
+	Credential       *aws.Credentials   // MANDATORY: credentials object from aws.STS
 	ProfileEntryName string             // MANDATORY: name of the desired profile entry e.g., '[devaccount]'. Brackets will be removed and spaces converted to dashes.
 	Region           string             // OPTIONAL: region to include in the profile entry
 	OutputFormat     string             // OPTIONAL: format for output when this credential is used, e.g., ('json', 'text')
@@ -406,10 +406,10 @@ func (c *CredFile) NewEntry(pfi *ProfileEntryInput) (err error) {
 		bc.Description = pfi.Description
 	}
 	// certain things always come from the sts.Credentials object
-	bc.AccessKeyID = *pfi.Credential.AccessKeyId
-	bc.SecretAccessKey = *pfi.Credential.SecretAccessKey
-	bc.SessionToken = *pfi.Credential.SessionToken
-	bc.Expiration = pfi.Credential.Expiration.String()
+	bc.AccessKeyID = pfi.Credential.AccessKeyID
+	bc.SecretAccessKey = pfi.Credential.SecretAccessKey
+	bc.SessionToken = pfi.Credential.SessionToken
+	bc.Expiration = pfi.Credential.Expires.String()
 	buf := new(bytes.Buffer)
 	if pfi.TemplateOverride != nil {
 		err = pfi.TemplateOverride.Execute(buf, bc)

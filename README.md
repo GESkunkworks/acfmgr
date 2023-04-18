@@ -67,7 +67,7 @@ import (
 func main() {
 	c, _ := acfmgr.NewCredFileSession("~/.aws/credentials")
 	profileInput := acfmgr.ProfileEntryInput{
-		Credential: <some sts.Credentials object>,
+		Credential: <some aws.Credentials object>,
 		ProfileEntryName: "devaccount1",
 	}
 	_ = c.NewEntry(profileInput)
@@ -85,7 +85,7 @@ import (
 func main() {
 	c, _ := acfmgr.NewCredFileSession("~/.aws/credentials")
 	profileInput := acfmgr.ProfileEntryInput{
-		Credential: <some sts.Credentials object>,
+		Credential: <some aws.Credentials object>,
 		ProfileEntryName: "devaccount",
 		OutputFormat: "text",
 		Region: "us-east-2",

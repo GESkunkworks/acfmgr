@@ -9,7 +9,7 @@ import (
 	"os/user"
 	"time"
 	"runtime"
-	"github.com/aws/aws-sdk-go/service/sts"
+	"github.com/aws/aws-sdk-go-v2/aws"
 )
 
 const baseCredFile string = `
@@ -285,7 +285,7 @@ func TestExpandPath(t *testing.T) {
         }
 }
 
-func getFakeCreds() *sts.Credentials {
+func getFakeCreds() *aws.Credentials {
     timeFormat := "2006-01-02T15:04:05Z" // time.RFC3339
     t, _ := time.Parse(timeFormat, "2020-01-08T14:03:02Z")
     st := "f8sNh8tocFpiabpbOGHfpqSYSgOQcNqvbzyNpAYW9gxWOlAcGpaPJMQoeD" +
@@ -296,11 +296,11 @@ func getFakeCreds() *sts.Credentials {
         "Fy74Oym6Ct1sFcNXVKrwmn2Ojnmec3KCAbFwynyTHPxE2PpHlVhQhvb2Az" +
         "w2FeLGAw1btiItcvLDrS3cDI3TfQNaa8L2MX3Zfr2yBv9UUS4MfS2pZQ42" +
         "Czze7PMRk6LrWh0HA+SdBUG6XeXDHcvXH3rH4GxJHuDhALCgNabFYwuXysXdGP="
-    cred := sts.Credentials{
-        AccessKeyId:     &[]string{"AHENVMSKIRUEQNFHGZTA"}[0],
-        SecretAccessKey: &[]string{"ZcqCQl34NF8PtXHSdbBk3mZze1plNNSWqnmsz523"}[0],
-        SessionToken:    &st,
-        Expiration:      &t,
+    cred := aws.Credentials{
+        AccessKeyID:     []string{"AHENVMSKIRUEQNFHGZTA"}[0],
+        SecretAccessKey: []string{"ZcqCQl34NF8PtXHSdbBk3mZze1plNNSWqnmsz523"}[0],
+        SessionToken:    st,
+        Expires:      t,
     }
     return &cred
 }
