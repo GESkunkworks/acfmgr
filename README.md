@@ -1,6 +1,8 @@
 # acfmgr
 Package acfmgr is a package to manage entries in an [AWS credentials file](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-files.html).
 
+[docs](./DOCS.md)
+
 Sample resulting AWS creds file entries:
 
 ```
