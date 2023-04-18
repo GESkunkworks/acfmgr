@@ -325,7 +325,7 @@ func (c *CredFile) createFile() (bool, error) {
 // for acfmgr CredFile to write a profile entry
 // to the file.
 type ProfileEntryInput struct {
-	Credential       *aws.Credentials   // MANDATORY: credentials object from aws.STS
+	Credential       *aws.Credentials   // MANDATORY: credentials object from aws
 	ProfileEntryName string             // MANDATORY: name of the desired profile entry e.g., '[devaccount]'. Brackets will be removed and spaces converted to dashes.
 	Region           string             // OPTIONAL: region to include in the profile entry
 	OutputFormat     string             // OPTIONAL: format for output when this credential is used, e.g., ('json', 'text')
