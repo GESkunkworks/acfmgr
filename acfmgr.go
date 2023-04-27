@@ -114,7 +114,7 @@ const credFileTemplate = `# DO NOT EDIT
 {{- if .HasRegion}}
 region = {{.Region}}{{end}}
 {{- if .HasOutput}}
-output = {{.Output}}{{end}}
+output = {{.OutputFormat}}{{end}}
 aws_access_key_id = {{.AccessKeyID}}
 aws_secret_access_key = {{.SecretAccessKey}}
 aws_session_token = {{.SessionToken}}
